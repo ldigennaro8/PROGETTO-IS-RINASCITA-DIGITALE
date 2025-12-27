@@ -3,7 +3,7 @@
 
 ##  Introduzione
 Repository per il progetto universitario di **[Ingegneria del Software]**.
-L'obiettivo è sviluppare una piattaforma per **[Il suporto alle persone bisognose post-Emergenze]**.
+L'obiettivo è sviluppare una piattaforma per **[Il supporto alle persone bisognose post-Emergenze]**.
 
 ##  Struttura del Repository
 Il progetto è organizzato secondo lo standard MindArt:
