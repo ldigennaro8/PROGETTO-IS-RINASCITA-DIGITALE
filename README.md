@@ -1,27 +1,24 @@
-# PROGETTO-IS-RINASCITA-DIGITALE
+# 🚑 RINASCITA DIGITALE
 
+## 🏫 Introduzione
+Repository per il progetto di **Ingegneria del Software**.
+[cite_start]**Rinascita Digitale** è una piattaforma logistica per la gestione degli aiuti nella fase post-emergenza.
+[cite_start]Il sistema mira a canalizzare e ottimizzare l'aiuto spontaneo di cittadini e volontari, trasformando il potenziale caos logistico in una risorsa efficiente per le organizzazioni di soccorso come la Protezione Civile.
 
-##  Introduzione
-Repository per il progetto universitario di **[Ingegneria del Software]**.
-L'obiettivo è sviluppare una piattaforma per **[Il supporto alle persone bisognose post-Emergenze]**.
-
-##  Struttura del Repository
-Il progetto è organizzato secondo lo standard MindArt:
-* **Management_Docs**: Documentazione di gestione (Piani, Gantt, Rischi).
-* **Product_Docs**: Documentazione tecnica (Requisiti, Design, UML).
+## 📂 Documentazione
+* **Management_Docs**: Documentazione di gestione.
+* **Product_Docs**: Contiene il **RAD** (Requirements Analysis Document) e la documentazione tecnica.
 * **src**: Codice sorgente dell'applicazione.
 
-##  Il Team
-Ecco i membri del gruppo che lavorano a questo progetto:
+## 👨‍💻 Il Team
+Il lavoro è suddiviso nei seguenti moduli funzionali:
 
-| Nome e Cognome | Ruolo / Compito |
+| Studente | Ruolo / Modulo |
 | :--- | :--- |
-| **[Luca Di Gennaro]** | Project Manager / Developer |
-| **[Gennaro Rescigno]** | Developer / Analyst |
-| **[Antonio SanGiovanni]** | Developer / Tester |
-| **[Cristian Ferrara]** | Developer |
+| **Luca Di Gennaro** | [cite_start]Gestione Richieste ed Enti |
+| **Cristian Ferrara** | [cite_start]Gestione Volontari  |
+| **Gennaro Rescigno** | [cite_start]Gestione Donazioni  |
+| **Antonio Sangiovanni** | [cite_start]Matching e Admin |
 
-## Tecnologie usate
-* Linguaggio: Java
-* Gestione: Maven
-* Versionamento: Git & GitHub
+## 🛠 Obiettivi
+[cite_start]L'obiettivo è ridurre drasticamente lo spreco di risorse e garantire l'utilizzo di ogni risorsa nel modo più efficace possibile tramite un sistema di matching intelligente.
