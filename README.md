@@ -21,4 +21,4 @@ Il lavoro è suddiviso nei seguenti moduli funzionali:
 | **Antonio Sangiovanni** | Matching e Admin |
 
 ## 🛠 Obiettivi
-[cite_start]L'obiettivo è ridurre drasticamente lo spreco di risorse e garantire l'utilizzo di ogni risorsa nel modo più efficace possibile tramite un sistema di matching intelligente.
+L'obiettivo è ridurre drasticamente lo spreco di risorse e garantire l'utilizzo di ogni risorsa nel modo più efficace possibile tramite un sistema di matching intelligente.
