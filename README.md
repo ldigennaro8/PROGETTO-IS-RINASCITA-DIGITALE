@@ -17,7 +17,6 @@ Il lavoro è suddiviso nei seguenti moduli funzionali:
 | :--- | :--- |
 | **Luca Di Gennaro** | Gestione Richieste ed Enti |
 | **Cristian Ferrara** | Gestione Volontari  |
-| **Gennaro Rescigno** | Gestione Donazioni  |
 | **Antonio Sangiovanni** | Matching e Admin |
 
 ## 🛠 Obiettivi
