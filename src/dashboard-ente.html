@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Ente - RinascitaDigitale</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        :root { --rosso-emergenza: #dc3545; --bianco-pulito: #ffffff; --grigio-scuro: #343a40; --verde-successo: #198754; }
+        .bg-emergenza { background-color: var(--rosso-emergenza) !important; }
+        .text-emergenza { color: var(--rosso-emergenza) !important; }
+        .btn-emergenza { background-color: var(--rosso-emergenza); border-color: var(--rosso-emergenza); color: var(--bianco-pulito); }
+        .btn-emergenza:hover { background-color: #bb2d3b; border-color: #b02a37; color: var(--bianco-pulito); }
+        .navbar-brand { font-weight: 700; font-size: 1.5rem; }
+        .sidebar { min-height: calc(100vh - 56px); background-color: var(--grigio-scuro); }
+        .sidebar .nav-link { color: rgba(255,255,255,0.7); padding: 0.75rem 1rem; border-radius: 0.375rem; margin-bottom: 0.25rem; }
+        .sidebar .nav-link:hover, .sidebar .nav-link.active { color: var(--bianco-pulito); background-color: rgba(255,255,255,0.1); }
+        .sidebar .nav-section { color: rgba(255,255,255,0.4); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05rem; padding: 0.5rem 1rem; margin-top: 0.5rem; }
+        .stat-card { border: none; border-radius: 1rem; transition: transform 0.2s; }
+        .stat-card:hover { transform: translateY(-2px); }
+        .priority-alta { color: #dc3545; font-weight: 700; }
+        .priority-media { color: #fd7e14; font-weight: 600; }
+        .priority-bassa { color: #198754; }
+        footer { background-color: var(--grigio-scuro); }
+    </style>
+</head>
+<body class="bg-light">
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark sticky-top">
+        <div class="container-fluid">
+            <a class="navbar-brand text-emergenza" href="index.html">RinascitaDigitale</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"><span class="navbar-toggler-icon"></span></button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item"><a class="nav-link" href="index.html">Home</a></li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown"><i class="bi bi-building me-1"></i><span id="nomeEnteNav">Ente</span></a>
+                        <ul class="dropdown-menu dropdown-menu-dark dropdown-menu-end">
+                            <li><a class="dropdown-item" href="#" onclick="navigateTo(event, 'impostazioni')"><i class="bi bi-gear me-2"></i>Impostazioni</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item text-danger" href="login.html" onclick="sessionStorage.removeItem('rd_utente_corrente')"><i class="bi bi-box-arrow-right me-2"></i>Logout</a></li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar -->
+            <div class="col-md-3 col-lg-2 d-md-block sidebar collapse py-3">
+                <nav class="nav flex-column">
+                    <a class="nav-link active" href="#" onclick="navigateTo(event, 'dashboard')"><i class="bi bi-speedometer2 me-2"></i>Dashboard</a>
+                    <a class="nav-link" href="#" onclick="navigateTo(event, 'validazione')"><i class="bi bi-clipboard-check me-2"></i>Validazione</a>
+                    <a class="nav-link" href="#" onclick="navigateTo(event, 'pubbliche')"><i class="bi bi-megaphone me-2"></i>Richieste Pubbliche</a>
+                    <div class="nav-section">Gestione Utenti</div>
+                    <a class="nav-link" href="#" onclick="navigateTo(event, 'volontari')"><i class="bi bi-people me-2"></i>Volontari</a>
+                    <a class="nav-link" href="#" onclick="navigateTo(event, 'cittadini')"><i class="bi bi-person me-2"></i>Cittadini</a>
+                    <a class="nav-link" href="#" onclick="navigateTo(event, 'donatori')"><i class="bi bi-gift me-2"></i>Donatori</a>
+                    <div class="nav-section">Sistema</div>
+                    <a class="nav-link" href="#" onclick="navigateTo(event, 'statistiche')"><i class="bi bi-bar-chart me-2"></i>Statistiche</a>
+                    <a class="nav-link" href="#" onclick="navigateTo(event, 'impostazioni')"><i class="bi bi-gear me-2"></i>Impostazioni</a>
+                </nav>
+            </div>
+
+            <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 py-4">
+
+                <!-- ═══ SEZIONE: Dashboard ═══ -->
+                <div class="content-section" id="section-dashboard">
+                    <div class="d-flex justify-content-between align-items-center pb-2 mb-3 border-bottom">
+                        <h1 class="h2"><i class="bi bi-speedometer2 me-2 text-emergenza"></i>Dashboard Ente</h1>
+                        <button class="btn btn-sm btn-outline-secondary" onclick="loadData()"><i class="bi bi-arrow-clockwise me-1"></i>Aggiorna</button>
+                    </div>
+                    <!-- Stat cards -->
+                    <div class="row mb-4">
+                        <div class="col-md-3 mb-3">
+                            <div class="card stat-card shadow-sm bg-warning text-dark"><div class="card-body"><div class="d-flex align-items-center">
+                                <div class="flex-grow-1"><h6 class="mb-1 opacity-75">Da Validare</h6><h3 class="mb-0" id="statDaValidare">0</h3></div>
+                                <i class="bi bi-hourglass-split fs-1 opacity-50"></i>
+                            </div></div></div>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <div class="card stat-card shadow-sm bg-success text-white"><div class="card-body"><div class="d-flex align-items-center">
+                                <div class="flex-grow-1"><h6 class="mb-1 opacity-75">Approvate</h6><h3 class="mb-0" id="statApprovate">0</h3></div>
+                                <i class="bi bi-check-circle fs-1 opacity-50"></i>
+                            </div></div></div>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <div class="card stat-card shadow-sm bg-primary text-white"><div class="card-body"><div class="d-flex align-items-center">
+                                <div class="flex-grow-1"><h6 class="mb-1 opacity-75">Volontari</h6><h3 class="mb-0" id="statVolontari">0</h3></div>
+                                <i class="bi bi-people fs-1 opacity-50"></i>
+                            </div></div></div>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <div class="card stat-card shadow-sm bg-danger text-white"><div class="card-body"><div class="d-flex align-items-center">
+                                <div class="flex-grow-1"><h6 class="mb-1 opacity-75">Alta Priorità</h6><h3 class="mb-0" id="statAlta">0</h3></div>
+                                <i class="bi bi-exclamation-triangle fs-1 opacity-50"></i>
+                            </div></div></div>
+                        </div>
+                    </div>
+                    <!-- Tabelle rapide -->
+                    <div class="row">
+                        <div class="col-lg-6 mb-4">
+                            <div class="card border-0 shadow-sm">
+                                <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                                    <h5 class="mb-0"><i class="bi bi-clock-history me-2"></i>Ultime Da Validare</h5>
+                                    <a href="#" class="text-decoration-none small" onclick="navigateTo(event, 'validazione')">Vedi tutte &rarr;</a>
+                                </div>
+                                <div class="card-body p-0"><div class="table-responsive">
+                                    <table class="table table-hover mb-0 table-sm"><thead class="table-light"><tr><th>Titolo</th><th>Zona</th><th>Data</th></tr></thead>
+                                    <tbody id="dashDaValidareTbody"></tbody></table>
+                                </div></div>
+                            </div>
+                        </div>
+                        <div class="col-lg-6 mb-4">
+                            <div class="card border-0 shadow-sm">
+                                <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                                    <h5 class="mb-0"><i class="bi bi-megaphone me-2"></i>Ultime Pubbliche</h5>
+                                    <a href="#" class="text-decoration-none small" onclick="navigateTo(event, 'pubbliche')">Vedi tutte &rarr;</a>
+                                </div>
+                                <div class="card-body p-0"><div class="table-responsive">
+                                    <table class="table table-hover mb-0 table-sm"><thead class="table-light"><tr><th>Titolo</th><th>Priorità</th><th>Candidature</th></tr></thead>
+                                    <tbody id="dashPubblicTbody"></tbody></table>
+                                </div></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ═══ SEZIONE: Validazione ═══ -->
+                <div class="content-section d-none" id="section-validazione">
+                    <div class="pb-2 mb-3 border-bottom"><h1 class="h2"><i class="bi bi-clipboard-check me-2 text-emergenza"></i>Validazione Segnalazioni</h1></div>
+                    <div class="card border-0 shadow-sm"><div class="card-body p-0"><div class="table-responsive">
+                        <table class="table table-hover mb-0" id="validazioneTable">
+                            <thead class="table-light"><tr><th>ID</th><th>Titolo</th><th>Descrizione</th><th>Zona</th><th>Cittadino</th><th>Data</th><th>Azioni</th></tr></thead>
+                            <tbody></tbody>
+                        </table>
+                    </div></div></div>
+                    <div id="emptyValidazione" class="text-center text-muted py-5 d-none"><i class="bi bi-inbox fs-1 d-block mb-2"></i>Nessuna segnalazione da validare.</div>
+                </div>
+
+                <!-- ═══ SEZIONE: Richieste Pubbliche ═══ -->
+                <div class="content-section d-none" id="section-pubbliche">
+                    <div class="pb-2 mb-3 border-bottom"><h1 class="h2"><i class="bi bi-megaphone me-2 text-emergenza"></i>Richieste Pubbliche</h1></div>
+                    <div class="card border-0 shadow-sm"><div class="card-body p-0"><div class="table-responsive">
+                        <table class="table table-hover mb-0" id="pubblicheTable">
+                            <thead class="table-light"><tr><th>ID</th><th>Titolo</th><th>Zona</th><th>Priorità</th><th>Candidature</th><th>Data</th><th>Azioni</th></tr></thead>
+                            <tbody></tbody>
+                        </table>
+                    </div></div></div>
+                    <div id="emptyPubbliche" class="text-center text-muted py-5 d-none"><i class="bi bi-inbox fs-1 d-block mb-2"></i>Nessuna richiesta pubblica.</div>
+                </div>
+
+                <!-- ═══ SEZIONE: Volontari ═══ -->
+                <div class="content-section d-none" id="section-volontari">
+                    <div class="pb-2 mb-3 border-bottom"><h1 class="h2"><i class="bi bi-people me-2 text-emergenza"></i>Gestione Volontari</h1></div>
+                    <div class="card border-0 shadow-sm"><div class="card-body p-0"><div class="table-responsive">
+                        <table class="table table-hover mb-0" id="volontariTable">
+                            <thead class="table-light"><tr><th>ID</th><th>Nome</th><th>Cognome</th><th>Email</th><th>Data Registrazione</th><th>Azioni</th></tr></thead>
+                            <tbody></tbody>
+                        </table>
+                    </div></div></div>
+                    <div id="emptyVolontari" class="text-center text-muted py-5 d-none"><i class="bi bi-person-x fs-1 d-block mb-2"></i>Nessun volontario registrato.</div>
+                </div>
+
+                <!-- ═══ SEZIONE: Cittadini ═══ -->
+                <div class="content-section d-none" id="section-cittadini">
+                    <div class="pb-2 mb-3 border-bottom"><h1 class="h2"><i class="bi bi-person me-2 text-emergenza"></i>Gestione Cittadini</h1></div>
+                    <div class="card border-0 shadow-sm"><div class="card-body p-0"><div class="table-responsive">
+                        <table class="table table-hover mb-0" id="cittadiniTable">
+                            <thead class="table-light"><tr><th>ID</th><th>Nome</th><th>Cognome</th><th>Email</th><th>Data Registrazione</th><th>Azioni</th></tr></thead>
+                            <tbody></tbody>
+                        </table>
+                    </div></div></div>
+                    <div id="emptyCittadini" class="text-center text-muted py-5 d-none"><i class="bi bi-person-x fs-1 d-block mb-2"></i>Nessun cittadino registrato.</div>
+                </div>
+
+                <!-- ═══ SEZIONE: Donatori ═══ -->
+                <div class="content-section d-none" id="section-donatori">
+                    <div class="pb-2 mb-3 border-bottom"><h1 class="h2"><i class="bi bi-gift me-2 text-emergenza"></i>Gestione Donatori</h1></div>
+                    <div class="card border-0 shadow-sm"><div class="card-body p-0"><div class="table-responsive">
+                        <table class="table table-hover mb-0" id="donatoriTable">
+                            <thead class="table-light"><tr><th>ID</th><th>Nome</th><th>Cognome</th><th>Email</th><th>Data Registrazione</th><th>Azioni</th></tr></thead>
+                            <tbody></tbody>
+                        </table>
+                    </div></div></div>
+                    <div id="emptyDonatori" class="text-center text-muted py-5 d-none"><i class="bi bi-person-x fs-1 d-block mb-2"></i>Nessun donatore registrato.</div>
+                </div>
+
+                <!-- ═══ SEZIONE: Statistiche ═══ -->
+                <div class="content-section d-none" id="section-statistiche">
+                    <div class="pb-2 mb-3 border-bottom"><h1 class="h2"><i class="bi bi-bar-chart me-2 text-emergenza"></i>Statistiche</h1></div>
+                    <div class="row mb-4">
+                        <div class="col-md-3 mb-3">
+                            <div class="card border-0 shadow-sm text-center py-3"><div class="card-body">
+                                <i class="bi bi-file-earmark-text text-warning fs-1 d-block mb-2"></i>
+                                <h2 class="fw-bold mb-0" id="statTotRichieste">0</h2><small class="text-muted">Richieste Totali</small>
+                            </div></div>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <div class="card border-0 shadow-sm text-center py-3"><div class="card-body">
+                                <i class="bi bi-people-fill text-primary fs-1 d-block mb-2"></i>
+                                <h2 class="fw-bold mb-0" id="statTotUtenti">0</h2><small class="text-muted">Utenti Totali</small>
+                            </div></div>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <div class="card border-0 shadow-sm text-center py-3"><div class="card-body">
+                                <i class="bi bi-hand-thumbs-up-fill text-success fs-1 d-block mb-2"></i>
+                                <h2 class="fw-bold mb-0" id="statTassoAppr">0%</h2><small class="text-muted">Tasso Approvazione</small>
+                            </div></div>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <div class="card border-0 shadow-sm text-center py-3"><div class="card-body">
+                                <i class="bi bi-lightning-fill text-danger fs-1 d-block mb-2"></i>
+                                <h2 class="fw-bold mb-0" id="statTotCandidature">0</h2><small class="text-muted">Candidature Totali</small>
+                            </div></div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-lg-6 mb-4">
+                            <div class="card border-0 shadow-sm">
+                                <div class="card-header bg-white"><h5 class="mb-0"><i class="bi bi-pie-chart me-2"></i>Distribuzione Utenti</h5></div>
+                                <div class="card-body" id="chartUtenti"></div>
+                            </div>
+                        </div>
+                        <div class="col-lg-6 mb-4">
+                            <div class="card border-0 shadow-sm">
+                                <div class="card-header bg-white"><h5 class="mb-0"><i class="bi bi-funnel me-2"></i>Distribuzione Priorità</h5></div>
+                                <div class="card-body" id="chartPriorita"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ═══ SEZIONE: Impostazioni ═══ -->
+                <div class="content-section d-none" id="section-impostazioni">
+                    <div class="pb-2 mb-3 border-bottom"><h1 class="h2"><i class="bi bi-gear me-2 text-emergenza"></i>Impostazioni</h1></div>
+                    <div class="row"><div class="col-lg-8">
+                        <div class="card border-0 shadow-sm mb-4">
+                            <div class="card-header bg-white"><h5 class="mb-0"><i class="bi bi-building me-2"></i>Dati Ente</h5></div>
+                            <div class="card-body"><form>
+                                <div class="mb-3"><label class="form-label">Nome Ente</label><input type="text" class="form-control" id="impostazioniNome"></div>
+                                <div class="mb-3"><label class="form-label">Email</label><input type="email" class="form-control" id="impostazioniEmail" readonly></div>
+                                <button type="button" class="btn btn-emergenza" onclick="alert('Dati aggiornati!')"><i class="bi bi-check-lg me-2"></i>Salva Modifiche</button>
+                            </form></div>
+                        </div>
+                    </div></div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- Modal: Approva con Priorità -->
+    <div class="modal fade" id="approvaModal" tabindex="-1">
+        <div class="modal-dialog"><div class="modal-content">
+            <div class="modal-header bg-success text-white"><h5 class="modal-title"><i class="bi bi-check-circle me-2"></i>Approva Segnalazione</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button></div>
+            <div class="modal-body">
+                <p>Stai approvando: <strong id="approvaTitolo"></strong></p>
+                <input type="hidden" id="approvaId">
+                <div class="mb-3"><label class="form-label fw-semibold">Seleziona Priorità</label>
+                    <select class="form-select" id="approvaPriorita">
+                        <option value="BASSA">🟢 Bassa</option>
+                        <option value="MEDIA" selected>🟡 Media</option>
+                        <option value="ALTA">🔴 Alta</option>
+                    </select>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annulla</button>
+                <button type="button" class="btn btn-success" onclick="confermaApprova()"><i class="bi bi-check-lg me-2"></i>Conferma Approvazione</button>
+            </div>
+        </div></div>
+    </div>
+
+    <!-- Modal: Dettaglio richiesta pubblica -->
+    <div class="modal fade" id="dettaglioModal" tabindex="-1">
+        <div class="modal-dialog"><div class="modal-content">
+            <div class="modal-header"><h5 class="modal-title"><i class="bi bi-info-circle me-2"></i>Dettaglio Richiesta</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+            <div class="modal-body" id="dettaglioBody"></div>
+            <div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Chiudi</button></div>
+        </div></div>
+    </div>
+
+    <footer class="py-3 text-white mt-auto"><div class="container-fluid text-center"><small>&copy; 2025 RinascitaDigitale - Pannello Ente</small></div></footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        const ente = JSON.parse(sessionStorage.getItem('rd_utente_corrente') || '{}');
+
+        (function init() {
+            document.getElementById('nomeEnteNav').textContent = ente.nome || 'Ente';
+            document.getElementById('impostazioniNome').value = ente.nome || '';
+            document.getElementById('impostazioniEmail').value = ente.email || '';
+        })();
+
+        /* ──────────── Cache dati ──────────── */
+        let richiesteInAttesa = [];
+        let richiesteAperte = [];
+        let volontari = [];
+        let cittadini = [];
+        let donatori = [];
+
+        function fmtDate(d) { return d ? new Date(d).toLocaleDateString('it-IT') : '-'; }
+
+        function prioritaBadge(p) {
+            if (!p) return '<span class="text-muted">-</span>';
+            const m = { 'ALTA': '🔴 Alta', 'MEDIA': '🟡 Media', 'BASSA': '🟢 Bassa' };
+            return `<span class="priority-${p.toLowerCase()}">${m[p] || p}</span>`;
+        }
+
+        /* ──────────── Caricamento dati ──────────── */
+        async function loadData() {
+            try {
+                const [resInAttesa, resAperte, resVolontari, resCittadini, resDonatori] = await Promise.all([
+                    fetch('/api/richieste?stato=IN_ATTESA'),
+                    fetch('/api/richieste?stato=APERTA'),
+                    fetch('/api/utenti?ruolo=VOLONTARIO'),
+                    fetch('/api/utenti?ruolo=CITTADINO'),
+                    fetch('/api/utenti?ruolo=DONATORE')
+                ]);
+                richiesteInAttesa = await resInAttesa.json();
+                richiesteAperte   = await resAperte.json();
+                volontari         = await resVolontari.json();
+                cittadini         = await resCittadini.json();
+                donatori          = await resDonatori.json();
+
+                renderStats();
+                renderDashboard();
+                renderValidazione();
+                renderPubbliche();
+                renderUtenti('volontariTable', volontari, 'emptyVolontari');
+                renderUtenti('cittadiniTable', cittadini, 'emptyCittadini');
+                renderUtenti('donatoriTable',  donatori,  'emptyDonatori');
+                renderStatistiche();
+            } catch (err) { console.error('Errore caricamento:', err); }
+        }
+
+        /* ──────────── Render stats ──────────── */
+        function renderStats() {
+            document.getElementById('statDaValidare').textContent = richiesteInAttesa.length;
+            document.getElementById('statApprovate').textContent  = richiesteAperte.length;
+            document.getElementById('statVolontari').textContent  = volontari.length;
+            document.getElementById('statAlta').textContent = richiesteAperte.filter(r => r.priorita === 'ALTA').length;
+        }
+
+        /* ──────────── Dashboard tables ──────────── */
+        function renderDashboard() {
+            const dvTbody = document.getElementById('dashDaValidareTbody');
+            dvTbody.innerHTML = '';
+            richiesteInAttesa.slice(0, 5).forEach(r => {
+                dvTbody.innerHTML += `<tr><td>${r.titolo}</td><td>${r.zona}</td><td>${fmtDate(r.data_creazione)}</td></tr>`;
+            });
+            if (!richiesteInAttesa.length) dvTbody.innerHTML = '<tr><td colspan="3" class="text-center text-muted py-3">Nessuna</td></tr>';
+
+            const ppTbody = document.getElementById('dashPubblicTbody');
+            ppTbody.innerHTML = '';
+            richiesteAperte.slice(0, 5).forEach(r => {
+                ppTbody.innerHTML += `<tr><td>${r.titolo}</td><td>${prioritaBadge(r.priorita)}</td><td><span class="badge bg-primary">${r.num_candidature || 0}</span></td></tr>`;
+            });
+            if (!richiesteAperte.length) ppTbody.innerHTML = '<tr><td colspan="3" class="text-center text-muted py-3">Nessuna</td></tr>';
+        }
+
+        /* ──────────── Validazione ──────────── */
+        function renderValidazione() {
+            const tbody = document.querySelector('#validazioneTable tbody');
+            tbody.innerHTML = '';
+            document.getElementById('emptyValidazione').classList.toggle('d-none', richiesteInAttesa.length > 0);
+            richiesteInAttesa.forEach(r => {
+                const cittadino = (r.creatore_nome || '') + ' ' + (r.creatore_cognome || '');
+                tbody.innerHTML += `<tr>
+                    <td><strong>#${r.id}</strong></td>
+                    <td>${r.titolo}</td>
+                    <td class="text-muted small">${(r.descrizione || '').substring(0, 80)}${r.descrizione && r.descrizione.length > 80 ? '...' : ''}</td>
+                    <td>${r.zona}</td>
+                    <td>${cittadino.trim() || '-'}</td>
+                    <td>${fmtDate(r.data_creazione)}</td>
+                    <td>
+                        <button class="btn btn-sm btn-success me-1" onclick="apriApprovaModal(${r.id}, '${r.titolo.replace(/'/g, "\\'")}')"><i class="bi bi-check-lg"></i> Approva</button>
+                        <button class="btn btn-sm btn-outline-danger" onclick="rifiuta(${r.id})"><i class="bi bi-x-lg"></i> Rifiuta</button>
+                    </td>
+                </tr>`;
+            });
+        }
+
+        /* ──────────── Richieste Pubbliche ──────────── */
+        function renderPubbliche() {
+            const tbody = document.querySelector('#pubblicheTable tbody');
+            tbody.innerHTML = '';
+            document.getElementById('emptyPubbliche').classList.toggle('d-none', richiesteAperte.length > 0);
+            richiesteAperte.forEach(r => {
+                tbody.innerHTML += `<tr>
+                    <td><strong>#${r.id}</strong></td>
+                    <td>${r.titolo}</td>
+                    <td>${r.zona}</td>
+                    <td>${prioritaBadge(r.priorita)}</td>
+                    <td><span class="badge bg-primary rounded-pill">${r.num_candidature || 0}</span></td>
+                    <td>${fmtDate(r.data_creazione)}</td>
+                    <td><button class="btn btn-sm btn-outline-info" onclick="dettaglio(${r.id})"><i class="bi bi-eye"></i></button>
+                        <button class="btn btn-sm btn-outline-danger ms-1" onclick="eliminaRichiesta(${r.id})"><i class="bi bi-trash"></i></button></td>
+                </tr>`;
+            });
+        }
+
+        /* ──────────── Tabella utenti generica ──────────── */
+        function renderUtenti(tableId, lista, emptyId) {
+            const tbody = document.querySelector('#' + tableId + ' tbody');
+            tbody.innerHTML = '';
+            document.getElementById(emptyId).classList.toggle('d-none', lista.length > 0);
+            lista.forEach(u => {
+                tbody.innerHTML += `<tr>
+                    <td>${u.id}</td>
+                    <td>${u.nome}</td>
+                    <td>${u.cognome}</td>
+                    <td>${u.email}</td>
+                    <td>${fmtDate(u.data_registrazione)}</td>
+                    <td><button class="btn btn-sm btn-outline-danger" onclick="eliminaUtente(${u.id}, '${u.nome} ${u.cognome}')"><i class="bi bi-trash me-1"></i>Elimina</button></td>
+                </tr>`;
+            });
+        }
+
+        /* ──────────── Azioni ──────────── */
+        function apriApprovaModal(id, titolo) {
+            document.getElementById('approvaId').value = id;
+            document.getElementById('approvaTitolo').textContent = titolo;
+            document.getElementById('approvaPriorita').value = 'MEDIA';
+            new bootstrap.Modal(document.getElementById('approvaModal')).show();
+        }
+
+        async function confermaApprova() {
+            const id = document.getElementById('approvaId').value;
+            const priorita = document.getElementById('approvaPriorita').value;
+            try {
+                const resp = await fetch('/api/richieste/' + id, {
+                    method: 'PUT', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ stato: 'APERTA', priorita, validato_da_id: ente.id })
+                });
+                const data = await resp.json();
+                if (data.success) {
+                    bootstrap.Modal.getInstance(document.getElementById('approvaModal')).hide();
+                    loadData();
+                } else { alert(data.error || 'Errore'); }
+            } catch (err) { alert('Errore di connessione.'); }
+        }
+
+        async function rifiuta(id) {
+            if (!confirm('Rifiutare questa segnalazione?')) return;
+            try {
+                await fetch('/api/richieste/' + id, {
+                    method: 'PUT', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ stato: 'RIFIUTATA', validato_da_id: ente.id })
+                });
+                loadData();
+            } catch (err) { alert('Errore di connessione.'); }
+        }
+
+        async function eliminaUtente(id, nome) {
+            if (!confirm(`Eliminare l'utente "${nome}"? Questa azione è irreversibile.`)) return;
+            try {
+                const resp = await fetch('/api/utenti/' + id, { method: 'DELETE' });
+                const data = await resp.json();
+                if (data.success) loadData();
+                else alert(data.error || 'Errore');
+            } catch (err) { alert('Errore di connessione.'); }
+        }
+
+        async function eliminaRichiesta(id) {
+            if (!confirm('Eliminare questa richiesta?')) return;
+            try {
+                const resp = await fetch('/api/richieste/' + id, { method: 'DELETE' });
+                const data = await resp.json();
+                if (data.success) loadData();
+                else alert(data.error || 'Errore');
+            } catch (err) { alert('Errore di connessione.'); }
+        }
+
+        function dettaglio(id) {
+            const r = richiesteAperte.find(x => x.id === id) || richiesteInAttesa.find(x => x.id === id);
+            if (!r) return;
+            const cittadino = (r.creatore_nome || '') + ' ' + (r.creatore_cognome || '');
+            document.getElementById('dettaglioBody').innerHTML = `
+                <dl class="row mb-0">
+                    <dt class="col-4">ID</dt><dd class="col-8">#${r.id}</dd>
+                    <dt class="col-4">Titolo</dt><dd class="col-8">${r.titolo}</dd>
+                    <dt class="col-4">Descrizione</dt><dd class="col-8">${r.descrizione || '-'}</dd>
+                    <dt class="col-4">Zona</dt><dd class="col-8">${r.zona}</dd>
+                    <dt class="col-4">Priorità</dt><dd class="col-8">${prioritaBadge(r.priorita)}</dd>
+                    <dt class="col-4">Stato</dt><dd class="col-8">${r.stato}</dd>
+                    <dt class="col-4">Cittadino</dt><dd class="col-8">${cittadino.trim() || '-'}</dd>
+                    <dt class="col-4">Candidature</dt><dd class="col-8">${r.num_candidature || 0}</dd>
+                    <dt class="col-4">Data</dt><dd class="col-8">${fmtDate(r.data_creazione)}</dd>
+                </dl>`;
+            new bootstrap.Modal(document.getElementById('dettaglioModal')).show();
+        }
+
+        /* ──────────── Statistiche ──────────── */
+        function renderStatistiche() {
+            const totRichieste = richiesteInAttesa.length + richiesteAperte.length;
+            const totUtenti = volontari.length + cittadini.length + donatori.length;
+            const totCandidature = richiesteAperte.reduce((s, r) => s + (r.num_candidature || 0), 0);
+            const tasso = totRichieste > 0 ? Math.round((richiesteAperte.length / totRichieste) * 100) : 0;
+
+            document.getElementById('statTotRichieste').textContent = totRichieste;
+            document.getElementById('statTotUtenti').textContent = totUtenti;
+            document.getElementById('statTassoAppr').textContent = tasso + '%';
+            document.getElementById('statTotCandidature').textContent = totCandidature;
+
+            // Chart utenti
+            const chartU = document.getElementById('chartUtenti');
+            const uData = [{l:'Volontari',v:volontari.length,c:'#0d6efd'},{l:'Cittadini',v:cittadini.length,c:'#198754'},{l:'Donatori',v:donatori.length,c:'#ffc107'}];
+            chartU.innerHTML = '';
+            uData.forEach(d => {
+                const pct = totUtenti > 0 ? Math.round((d.v / totUtenti) * 100) : 0;
+                chartU.innerHTML += `<div class="mb-3"><div class="d-flex justify-content-between mb-1"><span class="fw-semibold">${d.l}</span><span>${d.v} (${pct}%)</span></div><div class="progress" style="height:22px"><div class="progress-bar" style="width:${pct}%;background-color:${d.c}" role="progressbar">${pct}%</div></div></div>`;
+            });
+            if (totUtenti === 0) chartU.innerHTML = '<p class="text-muted text-center">Nessun utente registrato.</p>';
+
+            // Chart priorità
+            const chartP = document.getElementById('chartPriorita');
+            const alta = richiesteAperte.filter(r => r.priorita === 'ALTA').length;
+            const media = richiesteAperte.filter(r => r.priorita === 'MEDIA').length;
+            const bassa = richiesteAperte.filter(r => r.priorita === 'BASSA').length;
+            const tot = alta + media + bassa;
+            const pData = [{l:'🔴 Alta',v:alta,c:'#dc3545'},{l:'🟡 Media',v:media,c:'#ffc107'},{l:'🟢 Bassa',v:bassa,c:'#198754'}];
+            chartP.innerHTML = '';
+            pData.forEach(d => {
+                const pct = tot > 0 ? Math.round((d.v / tot) * 100) : 0;
+                chartP.innerHTML += `<div class="mb-3"><div class="d-flex justify-content-between mb-1"><span class="fw-semibold">${d.l}</span><span>${d.v} (${pct}%)</span></div><div class="progress" style="height:22px"><div class="progress-bar" style="width:${pct}%;background-color:${d.c}" role="progressbar">${pct}%</div></div></div>`;
+            });
+            if (tot === 0) chartP.innerHTML = '<p class="text-muted text-center">Nessuna richiesta pubblica.</p>';
+        }
+
+        /* ──────────── Navigazione ──────────── */
+        function navigateTo(event, sectionId) {
+            event.preventDefault();
+            document.querySelectorAll('.content-section').forEach(s => s.classList.add('d-none'));
+            document.getElementById('section-' + sectionId).classList.remove('d-none');
+            document.querySelectorAll('.sidebar .nav-link').forEach(l => l.classList.remove('active'));
+            event.currentTarget.classList.add('active');
+        }
+
+        /* ──────────── Avvio ──────────── */
+        loadData();
+    </script>
+</body>
+</html>

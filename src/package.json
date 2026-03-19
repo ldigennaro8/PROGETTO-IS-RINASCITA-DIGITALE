@@ -1,0 +1,17 @@
+{
+  "name": "rinascita-digitale",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Piattaforma Web per la Gestione Logistica delle Emergenze",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "dependencies": {
+    "bcryptjs": "^3.0.3",
+    "cors": "^2.8.5",
+    "express": "^4.18.2",
+    "mysql2": "^3.9.1",
+    "nodemailer": "^8.0.1"
+  }
+}
