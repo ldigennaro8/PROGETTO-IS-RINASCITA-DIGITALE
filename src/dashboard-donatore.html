@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Donatore - RinascitaDigitale</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        :root { --rosso-emergenza: #dc3545; --bianco-pulito: #ffffff; --grigio-scuro: #343a40; --verde-successo: #198754; }
+        .bg-emergenza { background-color: var(--rosso-emergenza) !important; }
+        .text-emergenza { color: var(--rosso-emergenza) !important; }
+        .btn-emergenza { background-color: var(--rosso-emergenza); border-color: var(--rosso-emergenza); color: var(--bianco-pulito); }
+        .btn-emergenza:hover { background-color: #bb2d3b; border-color: #b02a37; color: var(--bianco-pulito); }
+        .navbar-brand { font-weight: 700; font-size: 1.5rem; }
+        .sidebar { min-height: calc(100vh - 56px); background-color: var(--grigio-scuro); }
+        .sidebar .nav-link { color: rgba(255,255,255,0.7); padding: 0.75rem 1rem; border-radius: 0.375rem; margin-bottom: 0.25rem; }
+        .sidebar .nav-link:hover, .sidebar .nav-link.active { color: var(--bianco-pulito); background-color: rgba(255,255,255,0.1); }
+        footer { background-color: var(--grigio-scuro); }
+    </style>
+</head>
+<body class="bg-light">
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark sticky-top">
+        <div class="container-fluid">
+            <a class="navbar-brand text-emergenza" href="index.html">RinascitaDigitale</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"><span class="navbar-toggler-icon"></span></button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item"><a class="nav-link" href="index.html">Home</a></li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown"><i class="bi bi-person-circle me-1"></i><span id="nomeUtenteNav">Utente</span></a>
+                        <ul class="dropdown-menu dropdown-menu-dark dropdown-menu-end">
+                            <li><a class="dropdown-item" href="#" onclick="navigateTo(event, 'impostazioni')"><i class="bi bi-person me-2"></i>Profilo</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item text-danger" href="login.html" onclick="sessionStorage.removeItem('rd_utente_corrente')"><i class="bi bi-box-arrow-right me-2"></i>Logout</a></li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar -->
+            <div class="col-md-3 col-lg-2 d-md-block sidebar collapse py-3">
+                <nav class="nav flex-column">
+                    <a class="nav-link active" href="#" onclick="navigateTo(event, 'donazione')"><i class="bi bi-gift me-2"></i>Nuova Donazione</a>
+                    <a class="nav-link" href="#" onclick="navigateTo(event, 'mieDonazioni')"><i class="bi bi-list-ul me-2"></i>Le Mie Donazioni</a>
+                    <a class="nav-link" href="#" onclick="navigateTo(event, 'magazzino')"><i class="bi bi-box-seam me-2"></i>Magazzino</a>
+                    <a class="nav-link" href="#" onclick="navigateTo(event, 'impatto')"><i class="bi bi-graph-up me-2"></i>Impatto</a>
+                    <a class="nav-link" href="#" onclick="navigateTo(event, 'impostazioni')"><i class="bi bi-gear me-2"></i>Impostazioni</a>
+                </nav>
+            </div>
+
+            <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 py-4">
+
+                <!-- SEZIONE: Nuova Donazione -->
+                <div class="content-section" id="section-donazione">
+                    <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pb-2 mb-3 border-bottom">
+                        <h1 class="h2"><i class="bi bi-box-seam me-2 text-emergenza"></i>Gestione Donazioni</h1>
+                    </div>
+                    <div class="row mb-4">
+                        <div class="col-md-4 mb-3">
+                            <div class="card border-0 shadow-sm h-100 bg-success text-white"><div class="card-body"><div class="d-flex align-items-center">
+                                <div class="flex-grow-1"><h6 class="mb-1 opacity-75">Donazioni Totali</h6><h3 class="mb-0" id="totaleDonazioni">0</h3></div>
+                                <i class="bi bi-heart-fill fs-1 opacity-50"></i>
+                            </div></div></div>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <div class="card border-0 shadow-sm h-100 bg-primary text-white"><div class="card-body"><div class="d-flex align-items-center">
+                                <div class="flex-grow-1"><h6 class="mb-1 opacity-75">Beni Donati</h6><h3 class="mb-0" id="totaleBeni">0</h3></div>
+                                <i class="bi bi-box-seam fs-1 opacity-50"></i>
+                            </div></div></div>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <div class="card border-0 shadow-sm h-100 bg-warning text-dark"><div class="card-body"><div class="d-flex align-items-center">
+                                <div class="flex-grow-1"><h6 class="mb-1 opacity-75">Categorie</h6><h3 class="mb-0" id="totaleCat">0</h3></div>
+                                <i class="bi bi-tags fs-1 opacity-50"></i>
+                            </div></div></div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <!-- Form Nuova Donazione -->
+                        <div class="col-lg-5 mb-4">
+                            <div class="card border-0 shadow-sm">
+                                <div class="card-header bg-emergenza text-white"><h5 class="mb-0"><i class="bi bi-plus-circle me-2"></i>Nuova Donazione</h5></div>
+                                <div class="card-body">
+                                    <form id="donazioneForm">
+                                        <div class="mb-3"><label for="nomeBene" class="form-label">Nome Bene <span class="text-danger">*</span></label><input type="text" class="form-control" id="nomeBene" placeholder="Es. Coperte, Pasta, Farmaci..." required></div>
+                                        <div class="mb-3"><label for="categoria" class="form-label">Categoria <span class="text-danger">*</span></label>
+                                            <select class="form-select" id="categoria" required><option value="">Seleziona...</option><option value="cibo">Cibo</option><option value="farmaci">Farmaci</option><option value="vestiario">Vestiario</option></select>
+                                        </div>
+                                        <div class="row">
+                                            <div class="col-md-6 mb-3"><label for="quantita" class="form-label">Quantità <span class="text-danger">*</span></label><input type="number" class="form-control" id="quantita" min="1" value="1" required></div>
+                                            <div class="col-md-6 mb-3"><label for="dataScadenza" class="form-label">Data Scadenza</label><input type="date" class="form-control" id="dataScadenza"></div>
+                                        </div>
+                                        <button type="submit" class="btn btn-emergenza w-100"><i class="bi bi-gift me-2"></i>Dona</button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Tabella Ultime Donazioni -->
+                        <div class="col-lg-7 mb-4">
+                            <div class="card border-0 shadow-sm">
+                                <div class="card-header bg-white"><h5 class="mb-0"><i class="bi bi-table me-2"></i>Le mie Donazioni</h5></div>
+                                <div class="card-body p-0"><div class="table-responsive">
+                                    <table class="table table-hover mb-0" id="donazioniTable">
+                                        <thead class="table-light"><tr><th>Nome Bene</th><th>Categoria</th><th>Quantità</th><th>Scadenza</th><th>Data</th></tr></thead>
+                                        <tbody></tbody>
+                                    </table>
+                                </div></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SEZIONE: Le Mie Donazioni -->
+                <div class="content-section d-none" id="section-mieDonazioni">
+                    <div class="pb-2 mb-3 border-bottom"><h1 class="h2"><i class="bi bi-list-ul me-2 text-emergenza"></i>Le Mie Donazioni</h1></div>
+                    <div class="card border-0 shadow-sm mb-4"><div class="card-body">
+                        <div class="row g-3 align-items-end">
+                            <div class="col-md-4">
+                                <label class="form-label fw-semibold">Filtra per categoria</label>
+                                <select class="form-select" id="filtroCat" onchange="filtraDonazioni()"><option value="tutti">Tutte</option><option value="CIBO">Cibo</option><option value="FARMACI">Farmaci</option><option value="VESTIARIO">Vestiario</option></select>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label fw-semibold">Cerca</label>
+                                <div class="input-group"><span class="input-group-text"><i class="bi bi-search"></i></span>
+                                <input type="text" class="form-control" placeholder="Cerca bene donato..." id="cercaDonazione" oninput="filtraDonazioni()"></div>
+                            </div>
+                        </div>
+                    </div></div>
+                    <div class="card border-0 shadow-sm"><div class="card-body p-0"><div class="table-responsive">
+                        <table class="table table-hover mb-0" id="donazioniStoricoTable">
+                            <thead class="table-light"><tr><th>Nome Bene</th><th>Categoria</th><th>Quantità</th><th>Scadenza</th><th>Data Donazione</th></tr></thead>
+                            <tbody></tbody>
+                        </table>
+                    </div></div></div>
+                    <div id="emptyDonazioni" class="text-center text-muted py-5 d-none"><i class="bi bi-inbox fs-1 d-block mb-2"></i>Non hai ancora effettuato donazioni.</div>
+                </div>
+
+                <!-- SEZIONE: Magazzino -->
+                <div class="content-section d-none" id="section-magazzino">
+                    <div class="pb-2 mb-3 border-bottom"><h1 class="h2"><i class="bi bi-box-seam me-2 text-emergenza"></i>Magazzino</h1></div>
+                    <p class="text-muted mb-4">Riepilogo aggregato di tutti i beni donati, raggruppati per categoria.</p>
+                    <div class="row" id="magazzinoCards"></div>
+                    <div class="card border-0 shadow-sm mt-4">
+                        <div class="card-header bg-white"><h5 class="mb-0"><i class="bi bi-list-columns me-2"></i>Dettaglio Inventario</h5></div>
+                        <div class="card-body p-0"><div class="table-responsive">
+                            <table class="table table-hover mb-0" id="magazzinoTable">
+                                <thead class="table-light"><tr><th>Categoria</th><th>Nome Bene</th><th>Quantità Totale</th><th>N. Donazioni</th></tr></thead>
+                                <tbody></tbody>
+                            </table>
+                        </div></div>
+                    </div>
+                    <div id="emptyMagazzino" class="text-center text-muted py-5 d-none"><i class="bi bi-inbox fs-1 d-block mb-2"></i>Il magazzino è vuoto.</div>
+                </div>
+
+                <!-- SEZIONE: Impatto -->
+                <div class="content-section d-none" id="section-impatto">
+                    <div class="pb-2 mb-3 border-bottom"><h1 class="h2"><i class="bi bi-graph-up me-2 text-emergenza"></i>Il Mio Impatto</h1></div>
+                    <div class="row mb-4">
+                        <div class="col-md-3 mb-3">
+                            <div class="card border-0 shadow-sm text-center py-4"><div class="card-body">
+                                <i class="bi bi-heart-fill text-danger fs-1 mb-2 d-block"></i>
+                                <h2 class="fw-bold mb-0" id="impattoTotale">0</h2><small class="text-muted">Donazioni Effettuate</small>
+                            </div></div>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <div class="card border-0 shadow-sm text-center py-4"><div class="card-body">
+                                <i class="bi bi-box-seam text-primary fs-1 mb-2 d-block"></i>
+                                <h2 class="fw-bold mb-0" id="impattoBeni">0</h2><small class="text-muted">Beni Totali</small>
+                            </div></div>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <div class="card border-0 shadow-sm text-center py-4"><div class="card-body">
+                                <i class="bi bi-tags text-success fs-1 mb-2 d-block"></i>
+                                <h2 class="fw-bold mb-0" id="impattoCategorie">0</h2><small class="text-muted">Categorie Coperte</small>
+                            </div></div>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <div class="card border-0 shadow-sm text-center py-4"><div class="card-body">
+                                <i class="bi bi-calendar-check text-warning fs-1 mb-2 d-block"></i>
+                                <h2 class="fw-bold mb-0" id="impattoPrimaDonazione">-</h2><small class="text-muted">Prima Donazione</small>
+                            </div></div>
+                        </div>
+                    </div>
+                    <div class="card border-0 shadow-sm">
+                        <div class="card-header bg-white"><h5 class="mb-0"><i class="bi bi-bar-chart me-2"></i>Distribuzione per Categoria</h5></div>
+                        <div class="card-body">
+                            <div id="impattoChart"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SEZIONE: Impostazioni -->
+                <div class="content-section d-none" id="section-impostazioni">
+                    <div class="pb-2 mb-3 border-bottom"><h1 class="h2"><i class="bi bi-gear me-2 text-emergenza"></i>Impostazioni</h1></div>
+                    <div class="row"><div class="col-lg-8">
+                        <div class="card border-0 shadow-sm mb-4">
+                            <div class="card-header bg-white"><h5 class="mb-0"><i class="bi bi-person me-2"></i>Dati Personali</h5></div>
+                            <div class="card-body"><form>
+                                <div class="row mb-3">
+                                    <div class="col-md-6"><label class="form-label">Nome</label><input type="text" class="form-control" id="impostazioniNome"></div>
+                                    <div class="col-md-6"><label class="form-label">Cognome</label><input type="text" class="form-control" id="impostazioniCognome"></div>
+                                </div>
+                                <div class="mb-3"><label class="form-label">Email</label><input type="email" class="form-control" id="impostazioniEmail" readonly></div>
+                                <div class="mb-3"><label class="form-label">Ruolo</label><input type="text" class="form-control" id="impostazioniRuolo" readonly></div>
+                                <button type="button" class="btn btn-emergenza" onclick="alert('Dati aggiornati!')"><i class="bi bi-check-lg me-2"></i>Salva Modifiche</button>
+                            </form></div>
+                        </div>
+                        <div class="card border-0 shadow-sm">
+                            <div class="card-header bg-white"><h5 class="mb-0"><i class="bi bi-shield-lock me-2"></i>Sicurezza</h5></div>
+                            <div class="card-body">
+                                <div class="mb-3"><label class="form-label">Password attuale</label><input type="password" class="form-control"></div>
+                                <div class="mb-3"><label class="form-label">Nuova Password</label><input type="password" class="form-control"></div>
+                                <div class="mb-3"><label class="form-label">Conferma Nuova Password</label><input type="password" class="form-control"></div>
+                                <button type="button" class="btn btn-outline-danger" onclick="alert('Password aggiornata!')"><i class="bi bi-key me-2"></i>Cambia Password</button>
+                            </div>
+                        </div>
+                    </div></div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- Toast -->
+    <div class="toast-container position-fixed bottom-0 end-0 p-3">
+        <div id="grazieTost" class="toast align-items-center text-bg-success border-0" role="alert">
+            <div class="d-flex"><div class="toast-body fs-5"><i class="bi bi-heart-fill me-2"></i>Grazie per il tuo aiuto!</div>
+            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button></div>
+        </div>
+    </div>
+
+    <footer class="py-3 text-white mt-auto"><div class="container-fluid text-center"><small>&copy; 2025 RinascitaDigitale - Pannello Donatore</small></div></footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        const utente = JSON.parse(sessionStorage.getItem('rd_utente_corrente') || '{}');
+
+        (function init() {
+            const nome = ((utente.nome || '') + ' ' + (utente.cognome || '')).trim();
+            if (nome) document.getElementById('nomeUtenteNav').textContent = nome;
+            const f = { impostazioniNome: utente.nome, impostazioniCognome: utente.cognome, impostazioniEmail: utente.email, impostazioniRuolo: utente.ruolo };
+            Object.entries(f).forEach(([id, v]) => { const el = document.getElementById(id); if (el) el.value = v || ''; });
+        })();
+
+        let donazioniCache = [];
+        const catInfo = { 'CIBO': { badge: 'bg-warning text-dark', label: 'Cibo' }, 'FARMACI': { badge: 'bg-success', label: 'Farmaci' }, 'VESTIARIO': { badge: 'bg-primary', label: 'Vestiario' } };
+
+        function fmtDate(d) { return d ? new Date(d).toLocaleDateString('it-IT') : '-'; }
+
+        async function loadData() {
+            try {
+                const resp = await fetch('/api/donazioni?donatore_id=' + utente.id);
+                donazioniCache = await resp.json();
+                renderStats();
+                renderTable('donazioniTable');
+                renderTable('donazioniStoricoTable');
+                document.getElementById('emptyDonazioni').classList.toggle('d-none', donazioniCache.length > 0);
+                renderMagazzino();
+                renderImpatto();
+            } catch (err) { console.error('Errore caricamento:', err); }
+        }
+
+        function renderStats() {
+            document.getElementById('totaleDonazioni').textContent = donazioniCache.length;
+            document.getElementById('totaleBeni').textContent = donazioniCache.reduce((s, d) => s + d.quantita, 0);
+            const cats = new Set(donazioniCache.map(d => d.categoria));
+            document.getElementById('totaleCat').textContent = cats.size;
+        }
+
+        function renderTable(tableId) {
+            const tbody = document.querySelector('#' + tableId + ' tbody');
+            tbody.innerHTML = '';
+            donazioniCache.forEach(d => {
+                const info = catInfo[d.categoria] || { badge: 'bg-secondary', label: d.categoria };
+                tbody.innerHTML += `<tr data-cat="${d.categoria}">
+                    <td>${d.nome_bene}</td>
+                    <td><span class="badge ${info.badge}">${info.label}</span></td>
+                    <td>${d.quantita}</td>
+                    <td>${fmtDate(d.data_scadenza_bene)}</td>
+                    <td>${fmtDate(d.data_donazione)}</td>
+                </tr>`;
+            });
+        }
+
+        loadData();
+
+        /* ── Magazzino (aggregazione per categoria + bene) ── */
+        function renderMagazzino() {
+            const cards = document.getElementById('magazzinoCards');
+            const tbody = document.querySelector('#magazzinoTable tbody');
+            const empty = document.getElementById('emptyMagazzino');
+
+            if (donazioniCache.length === 0) {
+                cards.innerHTML = '';
+                tbody.innerHTML = '';
+                empty.classList.remove('d-none');
+                return;
+            }
+            empty.classList.add('d-none');
+
+            // Aggrega per categoria
+            const perCat = {};
+            donazioniCache.forEach(d => {
+                if (!perCat[d.categoria]) perCat[d.categoria] = { qta: 0, count: 0, beni: {} };
+                perCat[d.categoria].qta += d.quantita;
+                perCat[d.categoria].count++;
+                const key = d.nome_bene.toLowerCase();
+                if (!perCat[d.categoria].beni[key]) perCat[d.categoria].beni[key] = { nome: d.nome_bene, qta: 0, count: 0 };
+                perCat[d.categoria].beni[key].qta += d.quantita;
+                perCat[d.categoria].beni[key].count++;
+            });
+
+            const catColors = { 'CIBO': 'warning', 'FARMACI': 'success', 'VESTIARIO': 'primary' };
+            const catIcons = { 'CIBO': 'basket', 'FARMACI': 'capsule', 'VESTIARIO': 'handbag' };
+
+            cards.innerHTML = '';
+            Object.entries(perCat).forEach(([cat, data]) => {
+                const color = catColors[cat] || 'secondary';
+                const icon = catIcons[cat] || 'box';
+                const info = catInfo[cat] || { label: cat };
+                cards.innerHTML += `<div class="col-md-4 mb-3">
+                    <div class="card border-0 shadow-sm border-start border-4 border-${color}"><div class="card-body">
+                        <div class="d-flex align-items-center mb-2"><i class="bi bi-${icon} text-${color} fs-3 me-3"></i>
+                            <div><h5 class="mb-0">${info.label}</h5><small class="text-muted">${data.count} donazioni</small></div>
+                        </div>
+                        <h3 class="text-${color} mb-0">${data.qta} <small class="fs-6 text-muted">unità</small></h3>
+                    </div></div>
+                </div>`;
+            });
+
+            tbody.innerHTML = '';
+            Object.entries(perCat).forEach(([cat, data]) => {
+                const info = catInfo[cat] || { badge: 'bg-secondary', label: cat };
+                Object.values(data.beni).forEach(b => {
+                    tbody.innerHTML += `<tr>
+                        <td><span class="badge ${info.badge}">${info.label}</span></td>
+                        <td>${b.nome}</td><td><strong>${b.qta}</strong></td><td>${b.count}</td>
+                    </tr>`;
+                });
+            });
+        }
+
+        /* ── Impatto ── */
+        function renderImpatto() {
+            document.getElementById('impattoTotale').textContent = donazioniCache.length;
+            document.getElementById('impattoBeni').textContent = donazioniCache.reduce((s, d) => s + d.quantita, 0);
+            document.getElementById('impattoCategorie').textContent = new Set(donazioniCache.map(d => d.categoria)).size;
+
+            if (donazioniCache.length > 0) {
+                const dates = donazioniCache.map(d => new Date(d.data_donazione)).sort((a, b) => a - b);
+                document.getElementById('impattoPrimaDonazione').textContent = dates[0].toLocaleDateString('it-IT');
+            }
+
+            // Barre distribuzione per categoria
+            const chart = document.getElementById('impattoChart');
+            if (donazioniCache.length === 0) { chart.innerHTML = '<p class="text-muted text-center">Nessun dato disponibile.</p>'; return; }
+
+            const totale = donazioniCache.reduce((s, d) => s + d.quantita, 0);
+            const perCat = {};
+            donazioniCache.forEach(d => { perCat[d.categoria] = (perCat[d.categoria] || 0) + d.quantita; });
+
+            const catColors = { 'CIBO': '#ffc107', 'FARMACI': '#198754', 'VESTIARIO': '#0d6efd' };
+            chart.innerHTML = '';
+            Object.entries(perCat).forEach(([cat, qta]) => {
+                const pct = Math.round((qta / totale) * 100);
+                const info = catInfo[cat] || { label: cat };
+                chart.innerHTML += `<div class="mb-3">
+                    <div class="d-flex justify-content-between mb-1"><span class="fw-semibold">${info.label}</span><span>${qta} unità (${pct}%)</span></div>
+                    <div class="progress" style="height:24px"><div class="progress-bar" style="width:${pct}%;background-color:${catColors[cat] || '#6c757d'}" role="progressbar">${pct}%</div></div>
+                </div>`;
+            });
+        }
+
+        /* ── Navigazione ── */
+        function navigateTo(event, sectionId) {
+            event.preventDefault();
+            document.querySelectorAll('.content-section').forEach(s => s.classList.add('d-none'));
+            document.getElementById('section-' + sectionId).classList.remove('d-none');
+            document.querySelectorAll('.sidebar .nav-link').forEach(l => l.classList.remove('active'));
+            event.currentTarget.classList.add('active');
+        }
+
+        /* ── Filtro donazioni ── */
+        function filtraDonazioni() {
+            const cat = document.getElementById('filtroCat').value;
+            const cerca = document.getElementById('cercaDonazione').value.toLowerCase();
+            document.querySelectorAll('#donazioniStoricoTable tbody tr').forEach(r => {
+                const matchCat = cat === 'tutti' || r.dataset.cat === cat;
+                const matchCerca = !cerca || r.textContent.toLowerCase().includes(cerca);
+                r.style.display = (matchCat && matchCerca) ? '' : 'none';
+            });
+        }
+
+        /* ── Form donazione (API) ── */
+        document.getElementById('donazioneForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const nomeBene = document.getElementById('nomeBene').value;
+            const categoria = document.getElementById('categoria').value;
+            const quantita = document.getElementById('quantita').value;
+            const dataScadenza = document.getElementById('dataScadenza').value;
+
+            if (!nomeBene || !categoria || !quantita) { alert('Compila tutti i campi obbligatori.'); return; }
+
+            try {
+                const resp = await fetch('/api/donazioni', {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ nome_bene: nomeBene, categoria: categoria.toUpperCase(), quantita: parseInt(quantita), data_scadenza_bene: dataScadenza || null, donatore_id: utente.id })
+                });
+                const data = await resp.json();
+                if (data.success) {
+                    document.getElementById('donazioneForm').reset();
+                    new bootstrap.Toast(document.getElementById('grazieTost')).show();
+                    loadData();
+                } else { alert(data.error || 'Errore'); }
+            } catch (err) { alert('Errore di connessione.'); }
+        });
+    </script>
+</body>
+</html>
