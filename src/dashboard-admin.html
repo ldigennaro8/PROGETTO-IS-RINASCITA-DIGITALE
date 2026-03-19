@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RinascitaDigitale – Admin</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        :root { --primary: #198754; --primary-dark: #146c43; --sidebar-w: 260px; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f0f2f5; }
+
+        /* ── Sidebar ─────────────────────── */
+        .sidebar {
+            width: var(--sidebar-w); min-height: 100vh; background: linear-gradient(135deg,#1a1a2e,#16213e);
+            color: #fff; position: fixed; top: 0; left: 0; padding: 1.5rem 1rem; z-index: 1000;
+            overflow-y: auto;
+        }
+        .sidebar .brand { font-size: 1.35rem; font-weight: 700; color: #4ade80; margin-bottom: 2rem; }
+        .sidebar .nav-link {
+            color: rgba(255,255,255,.7); border-radius: .5rem; padding: .6rem 1rem;
+            margin-bottom: .25rem; transition: .2s; cursor: pointer;
+        }
+        .sidebar .nav-link:hover, .sidebar .nav-link.active { background: rgba(255,255,255,.12); color: #fff; }
+        .sidebar .nav-link i { width: 24px; text-align: center; margin-right: .5rem; }
+
+        /* ── Main Area ───────────────────── */
+        .main { margin-left: var(--sidebar-w); padding: 2rem 2.5rem; }
+        .section { display: none; }
+        .section.active { display: block; }
+
+        /* ── Cards ────────────────────────── */
+        .stat-card {
+            border: none; border-radius: 1rem; color: #fff; padding: 1.5rem;
+            display: flex; align-items: center; gap: 1rem;
+        }
+        .stat-card .icon { font-size: 2.2rem; opacity: .85; }
+        .stat-card .info h3 { margin: 0; font-size: 1.8rem; font-weight: 700; }
+        .stat-card .info small { opacity: .85; }
+
+        .card-custom { border: none; border-radius: 1rem; box-shadow: 0 2px 12px rgba(0,0,0,.06); }
+
+        /* ── Table tweaks ────────────────── */
+        .table th { background: #f8f9fa; font-weight: 600; font-size: .85rem; text-transform: uppercase; letter-spacing: .3px; }
+    </style>
+</head>
+<body>
+
+<!-- ═══════════════  SIDEBAR  ═══════════════ -->
+<nav class="sidebar">
+    <div class="brand"><i class="bi bi-shield-lock"></i> Admin Panel</div>
+    <ul class="nav flex-column">
+        <li class="nav-item"><a class="nav-link active" data-section="panoramica"><i class="bi bi-speedometer2"></i> Panoramica</a></li>
+        <li class="nav-item"><a class="nav-link" data-section="utenti"><i class="bi bi-people"></i> Utenti</a></li>
+        <li class="nav-item"><a class="nav-link" data-section="enti"><i class="bi bi-building"></i> Gestione Enti</a></li>
+        <li class="nav-item"><a class="nav-link" data-section="richieste"><i class="bi bi-megaphone"></i> Richieste</a></li>
+        <li class="nav-item"><a class="nav-link" data-section="donazioni"><i class="bi bi-gift"></i> Donazioni</a></li>
+        <li class="nav-item"><a class="nav-link" data-section="candidature"><i class="bi bi-hand-thumbs-up"></i> Candidature</a></li>
+        <hr class="border-secondary my-2">
+        <li class="nav-item"><a class="nav-link text-danger" onclick="logout()"><i class="bi bi-box-arrow-left"></i> Esci</a></li>
+    </ul>
+</nav>
+
+<!-- ═══════════════  MAIN CONTENT  ═══════════════ -->
+<div class="main">
+
+    <!-- ─── PANORAMICA ─── -->
+    <div id="panoramica" class="section active">
+        <h4 class="fw-bold mb-4"><i class="bi bi-speedometer2 me-2"></i>Panoramica Generale</h4>
+
+        <div class="row g-3 mb-4" id="statsCards">
+            <!-- filled by JS -->
+        </div>
+
+        <div class="row g-4">
+            <div class="col-md-6">
+                <div class="card card-custom">
+                    <div class="card-header bg-white fw-bold">Ultime Richieste</div>
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0 table-sm">
+                                <thead><tr><th>ID</th><th>Titolo</th><th>Tipo</th><th>Stato</th><th>Data</th></tr></thead>
+                                <tbody id="tblUltimeRichieste"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card card-custom">
+                    <div class="card-header bg-white fw-bold">Ultime Donazioni</div>
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0 table-sm">
+                                <thead><tr><th>ID</th><th>Tipo</th><th>Descrizione</th><th>Quantità</th><th>Data</th></tr></thead>
+                                <tbody id="tblUltimeDonazioni"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ─── UTENTI ─── -->
+    <div id="utenti" class="section">
+        <h4 class="fw-bold mb-4"><i class="bi bi-people me-2"></i>Tutti gli Utenti</h4>
+        <div class="card card-custom">
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover mb-0">
+                        <thead><tr><th>ID</th><th>Nome</th><th>Cognome</th><th>Email</th><th>Ruolo</th><th>Registrazione</th><th>Azioni</th></tr></thead>
+                        <tbody id="tblUtenti"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ─── GESTIONE ENTI ─── -->
+    <div id="enti" class="section">
+        <h4 class="fw-bold mb-4"><i class="bi bi-building me-2"></i>Gestione Enti</h4>
+
+        <!-- Form Nuovo Ente -->
+        <div class="card card-custom mb-4">
+            <div class="card-header bg-white fw-bold"><i class="bi bi-plus-circle me-1"></i> Inserisci Nuovo Ente</div>
+            <div class="card-body">
+                <form id="formNuovoEnte" onsubmit="creaNuovoEnte(event)">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Nome Ente *</label>
+                            <input type="text" class="form-control" id="enteNome" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Email *</label>
+                            <input type="email" class="form-control" id="enteEmail" required>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Password *</label>
+                            <input type="text" class="form-control" id="entePassword" required>
+                            <div class="form-text">Min 8 caratteri, maiuscola, minuscola, carattere speciale</div>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Zona di Competenza</label>
+                            <input type="text" class="form-control" id="enteZona">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Telefono</label>
+                            <input type="text" class="form-control" id="enteTelefono">
+                        </div>
+                        <div class="col-md-12">
+                            <label class="form-label">Indirizzo</label>
+                            <input type="text" class="form-control" id="enteIndirizzo">
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-success mt-3"><i class="bi bi-check-lg me-1"></i> Crea Ente</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Tabella Enti Esistenti -->
+        <div class="card card-custom">
+            <div class="card-header bg-white fw-bold">Enti Registrati</div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover mb-0">
+                        <thead><tr><th>ID</th><th>Nome Ente</th><th>Email</th><th>Zona</th><th>Telefono</th><th>Indirizzo</th><th>Data Ins.</th><th>Azioni</th></tr></thead>
+                        <tbody id="tblEnti"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ─── RICHIESTE ─── -->
+    <div id="richieste" class="section">
+        <h4 class="fw-bold mb-4"><i class="bi bi-megaphone me-2"></i>Tutte le Richieste</h4>
+        <div class="card card-custom">
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover mb-0">
+                        <thead><tr><th>ID</th><th>Titolo</th><th>Tipo</th><th>Priorità</th><th>Stato</th><th>Zona</th><th>Data</th><th>Azioni</th></tr></thead>
+                        <tbody id="tblRichieste"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ─── DONAZIONI ─── -->
+    <div id="donazioni" class="section">
+        <h4 class="fw-bold mb-4"><i class="bi bi-gift me-2"></i>Tutte le Donazioni</h4>
+        <div class="card card-custom">
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover mb-0">
+                        <thead><tr><th>ID</th><th>Tipo</th><th>Descrizione</th><th>Quantità</th><th>Stato</th><th>Donatore</th><th>Data</th><th>Azioni</th></tr></thead>
+                        <tbody id="tblDonazioni"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ─── CANDIDATURE ─── -->
+    <div id="candidature" class="section">
+        <h4 class="fw-bold mb-4"><i class="bi bi-hand-thumbs-up me-2"></i>Tutte le Candidature</h4>
+        <div class="card card-custom">
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover mb-0">
+                        <thead><tr><th>ID</th><th>Richiesta</th><th>Volontario</th><th>Stato</th><th>Data</th><th>Azioni</th></tr></thead>
+                        <tbody id="tblCandidature"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div><!-- /main -->
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+/* ══════════════════════════════════════════════════
+   ADMIN DASHBOARD – JavaScript
+   ══════════════════════════════════════════════════ */
+
+// ── Auth guard ──────────────────────────────────
+const utenteCorrente = JSON.parse(sessionStorage.getItem('rd_utente_corrente'));
+if (!utenteCorrente || utenteCorrente.ruolo !== 'ADMIN') {
+    location.href = 'login.html';
+}
+
+// ── Sidebar navigation ─────────────────────────
+document.querySelectorAll('.sidebar .nav-link[data-section]').forEach(link => {
+    link.addEventListener('click', () => {
+        document.querySelectorAll('.sidebar .nav-link').forEach(l => l.classList.remove('active'));
+        link.classList.add('active');
+        document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+        document.getElementById(link.dataset.section).classList.add('active');
+
+        // Lazy-load data per section
+        loadSection(link.dataset.section);
+    });
+});
+
+// ── Stato Badge ─────────────────────────────────
+function badge(stato) {
+    const map = {
+        'APERTA': 'bg-success', 'IN_ATTESA': 'bg-warning text-dark', 'CHIUSA': 'bg-secondary',
+        'ACCETTATA': 'bg-primary', 'RIFIUTATA': 'bg-danger', 'COMPLETATA': 'bg-info',
+        'DISPONIBILE': 'bg-success', 'CONSEGNATA': 'bg-info', 'PRENOTATA': 'bg-warning text-dark',
+        'IN_CORSO': 'bg-primary'
+    };
+    return `<span class="badge ${map[stato] || 'bg-dark'}">${stato}</span>`;
+}
+
+function fmtDate(d) {
+    if (!d) return '-';
+    return new Date(d).toLocaleDateString('it-IT', { day: '2-digit', month: '2-digit', year: 'numeric' });
+}
+
+// ── Data loaders ────────────────────────────────
+let dataCache = {};
+
+async function fetchJSON(url) {
+    const r = await fetch(url);
+    if (!r.ok) throw new Error(`Errore: ${r.status}`);
+    return r.json();
+}
+
+function loadSection(name) {
+    const loaders = {
+        panoramica: loadPanoramica,
+        utenti: loadUtenti,
+        enti: loadEnti,
+        richieste: loadRichieste,
+        donazioni: loadDonazioni,
+        candidature: loadCandidature
+    };
+    if (loaders[name]) loaders[name]();
+}
+
+// ══════════════ PANORAMICA ══════════════
+async function loadPanoramica() {
+    try {
+        const stats = await fetchJSON('/api/stats');
+        const cards = [
+            { label: 'Utenti Totali',    value: stats.totUtenti,      icon: 'bi-people-fill',        bg: 'bg-primary' },
+            { label: 'Enti',             value: stats.totEnti,         icon: 'bi-building',           bg: 'bg-success' },
+            { label: 'Richieste',        value: stats.totRichieste,    icon: 'bi-megaphone-fill',     bg: 'bg-danger' },
+            { label: 'Donazioni',        value: stats.totDonazioni,    icon: 'bi-gift-fill',          bg: 'bg-warning text-dark' },
+            { label: 'Candidature',      value: stats.totCandidature,  icon: 'bi-hand-thumbs-up-fill',bg: 'bg-info' },
+            { label: 'Richieste Aperte', value: stats.richiesteAperte, icon: 'bi-exclamation-circle', bg: 'bg-dark' },
+            { label: 'Volontari',        value: stats.volontari,       icon: 'bi-person-badge',       bg: 'bg-primary' },
+            { label: 'Cittadini',        value: stats.cittadini,       icon: 'bi-person',             bg: 'bg-secondary' },
+            { label: 'Donatori',         value: stats.donatori,        icon: 'bi-heart-fill',         bg: 'bg-danger' },
+        ];
+        document.getElementById('statsCards').innerHTML = cards.map(c => `
+            <div class="col-6 col-md-4 col-lg-3">
+                <div class="stat-card ${c.bg}">
+                    <div class="icon"><i class="bi ${c.icon}"></i></div>
+                    <div class="info"><h3>${c.value}</h3><small>${c.label}</small></div>
+                </div>
+            </div>
+        `).join('');
+
+        // Ultime richieste
+        const richieste = await fetchJSON('/api/richieste');
+        document.getElementById('tblUltimeRichieste').innerHTML = richieste.slice(0, 5).map(r => `
+            <tr><td>${r.id}</td><td>${r.titolo}</td><td>${r.tipo_emergenza || '-'}</td><td>${badge(r.stato)}</td><td>${fmtDate(r.data_creazione)}</td></tr>
+        `).join('') || '<tr><td colspan="5" class="text-center text-muted">Nessuna richiesta</td></tr>';
+
+        // Ultime donazioni
+        const donazioni = await fetchJSON('/api/donazioni');
+        document.getElementById('tblUltimeDonazioni').innerHTML = donazioni.slice(0, 5).map(d => `
+            <tr><td>${d.id}</td><td>${d.tipo_bene || '-'}</td><td>${d.descrizione || '-'}</td><td>${d.quantita || '-'}</td><td>${fmtDate(d.data_donazione)}</td></tr>
+        `).join('') || '<tr><td colspan="5" class="text-center text-muted">Nessuna donazione</td></tr>';
+
+    } catch (err) { console.error('Errore panoramica:', err); }
+}
+
+// ══════════════ UTENTI ══════════════
+async function loadUtenti() {
+    try {
+        const utenti = await fetchJSON('/api/utenti');
+        document.getElementById('tblUtenti').innerHTML = utenti.map(u => `
+            <tr>
+                <td>${u.id}</td><td>${u.nome}</td><td>${u.cognome}</td><td>${u.email}</td>
+                <td>${badge(u.ruolo)}</td><td>${fmtDate(u.data_registrazione)}</td>
+                <td><button class="btn btn-sm btn-outline-danger" onclick="eliminaUtente(${u.id})"><i class="bi bi-trash"></i></button></td>
+            </tr>
+        `).join('') || '<tr><td colspan="7" class="text-center text-muted">Nessun utente</td></tr>';
+    } catch (err) { console.error('Errore utenti:', err); }
+}
+
+async function eliminaUtente(id) {
+    if (!confirm('Eliminare questo utente?')) return;
+    try {
+        await fetch(`/api/utenti/${id}`, { method: 'DELETE' });
+        loadUtenti();
+    } catch (err) { alert('Errore eliminazione utente.'); }
+}
+
+// ══════════════ ENTI ══════════════
+async function loadEnti() {
+    try {
+        const enti = await fetchJSON('/api/enti');
+        document.getElementById('tblEnti').innerHTML = enti.map(e => `
+            <tr>
+                <td>${e.id}</td><td>${e.nome_ente}</td><td>${e.email}</td>
+                <td>${e.zona_competenza || '-'}</td><td>${e.telefono || '-'}</td><td>${e.indirizzo || '-'}</td>
+                <td>${fmtDate(e.data_inserimento)}</td>
+                <td><button class="btn btn-sm btn-outline-danger" onclick="eliminaEnte(${e.id})"><i class="bi bi-trash"></i></button></td>
+            </tr>
+        `).join('') || '<tr><td colspan="8" class="text-center text-muted">Nessun ente registrato</td></tr>';
+    } catch (err) { console.error('Errore enti:', err); }
+}
+
+async function eliminaEnte(id) {
+    if (!confirm('Eliminare questo ente?')) return;
+    try {
+        await fetch(`/api/enti/${id}`, { method: 'DELETE' });
+        loadEnti();
+    } catch (err) { alert('Errore eliminazione ente.'); }
+}
+
+const pwdRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]).{8,}$/;
+
+async function creaNuovoEnte(e) {
+    e.preventDefault();
+
+    const nome_ente = document.getElementById('enteNome').value.trim();
+    const email     = document.getElementById('enteEmail').value.trim();
+    const password  = document.getElementById('entePassword').value;
+    const zona_competenza = document.getElementById('enteZona').value.trim();
+    const telefono  = document.getElementById('enteTelefono').value.trim();
+    const indirizzo = document.getElementById('enteIndirizzo').value.trim();
+
+    if (!pwdRegex.test(password)) {
+        alert('La password deve avere almeno 8 caratteri, una maiuscola, una minuscola e un carattere speciale.');
+        return;
+    }
+
+    try {
+        const res = await fetch('/api/enti', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ nome_ente, email, password, zona_competenza, telefono, indirizzo })
+        });
+        const data = await res.json();
+        if (!res.ok) { alert(data.error || 'Errore creazione ente.'); return; }
+
+        alert('Ente creato con successo!');
+        document.getElementById('formNuovoEnte').reset();
+        loadEnti();
+    } catch (err) {
+        console.error(err);
+        alert('Errore di rete nella creazione dell\'ente.');
+    }
+}
+
+// ══════════════ RICHIESTE ══════════════
+async function loadRichieste() {
+    try {
+        const richieste = await fetchJSON('/api/richieste');
+        document.getElementById('tblRichieste').innerHTML = richieste.map(r => `
+            <tr>
+                <td>${r.id}</td><td>${r.titolo}</td><td>${r.tipo_emergenza || '-'}</td>
+                <td>${r.priorita || '-'}</td><td>${badge(r.stato)}</td><td>${r.zona || '-'}</td>
+                <td>${fmtDate(r.data_creazione)}</td>
+                <td><button class="btn btn-sm btn-outline-danger" onclick="eliminaRichiesta(${r.id})"><i class="bi bi-trash"></i></button></td>
+            </tr>
+        `).join('') || '<tr><td colspan="8" class="text-center text-muted">Nessuna richiesta</td></tr>';
+    } catch (err) { console.error('Errore richieste:', err); }
+}
+
+async function eliminaRichiesta(id) {
+    if (!confirm('Eliminare questa richiesta?')) return;
+    try {
+        await fetch(`/api/richieste/${id}`, { method: 'DELETE' });
+        loadRichieste();
+    } catch (err) { alert('Errore eliminazione richiesta.'); }
+}
+
+// ══════════════ DONAZIONI ══════════════
+async function loadDonazioni() {
+    try {
+        const donazioni = await fetchJSON('/api/donazioni');
+        document.getElementById('tblDonazioni').innerHTML = donazioni.map(d => `
+            <tr>
+                <td>${d.id}</td><td>${d.tipo_bene || '-'}</td><td>${d.descrizione || '-'}</td>
+                <td>${d.quantita || '-'}</td><td>${badge(d.stato || 'DISPONIBILE')}</td>
+                <td>${d.donatore_id || '-'}</td><td>${fmtDate(d.data_donazione)}</td>
+                <td><button class="btn btn-sm btn-outline-danger" onclick="eliminaDonazione(${d.id})"><i class="bi bi-trash"></i></button></td>
+            </tr>
+        `).join('') || '<tr><td colspan="8" class="text-center text-muted">Nessuna donazione</td></tr>';
+    } catch (err) { console.error('Errore donazioni:', err); }
+}
+
+async function eliminaDonazione(id) {
+    if (!confirm('Eliminare questa donazione?')) return;
+    try {
+        await fetch(`/api/donazioni/${id}`, { method: 'DELETE' });
+        loadDonazioni();
+    } catch (err) { alert('Errore eliminazione donazione.'); }
+}
+
+// ══════════════ CANDIDATURE ══════════════
+async function loadCandidature() {
+    try {
+        const candidature = await fetchJSON('/api/candidature');
+        document.getElementById('tblCandidature').innerHTML = candidature.map(c => `
+            <tr>
+                <td>${c.id}</td><td>${c.richiesta_id}</td><td>${c.volontario_id}</td>
+                <td>${badge(c.stato)}</td><td>${fmtDate(c.data_candidatura)}</td>
+                <td><button class="btn btn-sm btn-outline-danger" onclick="eliminaCandidatura(${c.id})"><i class="bi bi-trash"></i></button></td>
+            </tr>
+        `).join('') || '<tr><td colspan="6" class="text-center text-muted">Nessuna candidatura</td></tr>';
+    } catch (err) { console.error('Errore candidature:', err); }
+}
+
+async function eliminaCandidatura(id) {
+    if (!confirm('Eliminare questa candidatura?')) return;
+    try {
+        await fetch(`/api/candidature/${id}`, { method: 'DELETE' });
+        loadCandidature();
+    } catch (err) { alert('Errore eliminazione candidatura.'); }
+}
+
+// ── Logout ──────────────────────────────────────
+function logout() {
+    sessionStorage.removeItem('rd_utente_corrente');
+    location.href = 'login.html';
+}
+
+// ── Init ────────────────────────────────────────
+loadPanoramica();
+</script>
+</body>
+</html>
