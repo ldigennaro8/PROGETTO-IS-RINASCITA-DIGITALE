@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Volontario - RinascitaDigitale</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        :root { --rosso-emergenza: #dc3545; --bianco-pulito: #ffffff; --grigio-scuro: #343a40; --verde-successo: #198754; }
+        .bg-emergenza { background-color: var(--rosso-emergenza) !important; }
+        .text-emergenza { color: var(--rosso-emergenza) !important; }
+        .btn-emergenza { background-color: var(--rosso-emergenza); border-color: var(--rosso-emergenza); color: var(--bianco-pulito); }
+        .btn-emergenza:hover { background-color: #bb2d3b; border-color: #b02a37; color: var(--bianco-pulito); }
+        .navbar-brand { font-weight: 700; font-size: 1.5rem; }
+        .sidebar { min-height: calc(100vh - 56px); background-color: var(--grigio-scuro); }
+        .sidebar .nav-link { color: rgba(255,255,255,0.7); padding: 0.75rem 1rem; border-radius: 0.375rem; margin-bottom: 0.25rem; }
+        .sidebar .nav-link:hover, .sidebar .nav-link.active { color: var(--bianco-pulito); background-color: rgba(255,255,255,0.1); }
+        .priority-alta { background-color: var(--rosso-emergenza); }
+        .priority-media { background-color: #ffc107; color: #212529; }
+        .priority-bassa { background-color: var(--verde-successo); }
+        .task-card { transition: transform 0.2s, box-shadow 0.2s; }
+        .task-card:hover { transform: translateY(-5px); box-shadow: 0 0.5rem 1rem rgba(0,0,0,0.15) !important; }
+        footer { background-color: var(--grigio-scuro); }
+    </style>
+</head>
+<body class="bg-light">
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark sticky-top">
+        <div class="container-fluid">
+            <a class="navbar-brand text-emergenza" href="index.html">RinascitaDigitale</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"><span class="navbar-toggler-icon"></span></button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item"><a class="nav-link" href="index.html">Home</a></li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown"><i class="bi bi-person-circle me-1"></i><span id="nomeUtenteNav">Utente</span></a>
+                        <ul class="dropdown-menu dropdown-menu-dark dropdown-menu-end">
+                            <li><a class="dropdown-item" href="#" onclick="navigateTo(event, 'impostazioni')"><i class="bi bi-person me-2"></i>Profilo</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item text-danger" href="login.html" onclick="sessionStorage.removeItem('rd_utente_corrente')"><i class="bi bi-box-arrow-right me-2"></i>Logout</a></li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar -->
+            <div class="col-md-3 col-lg-2 d-md-block sidebar collapse py-3">
+                <nav class="nav flex-column">
+                    <a class="nav-link active" href="#" onclick="navigateTo(event, 'richieste')"><i class="bi bi-grid me-2"></i>Richieste Aperte</a>
+                    <a class="nav-link" href="#" onclick="navigateTo(event, 'mieiTask')"><i class="bi bi-check2-square me-2"></i>I Miei Task</a>
+                    <a class="nav-link" href="#" onclick="navigateTo(event, 'storico')"><i class="bi bi-clock-history me-2"></i>Storico Attività</a>
+                    <a class="nav-link" href="#" onclick="navigateTo(event, 'impostazioni')"><i class="bi bi-gear me-2"></i>Impostazioni</a>
+                </nav>
+            </div>
+
+            <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 py-4">
+
+                <!-- ===== SEZIONE: RICHIESTE APERTE ===== -->
+                <div class="content-section" id="section-richieste">
+                    <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pb-2 mb-3 border-bottom">
+                        <h1 class="h2"><i class="bi bi-person-raised-hand me-2 text-emergenza"></i>Richieste Aperte</h1>
+                        <div class="btn-toolbar">
+                            <div class="input-group"><span class="input-group-text bg-white"><i class="bi bi-search"></i></span>
+                            <input type="text" class="form-control" placeholder="Cerca richieste..." id="cercaRichieste" oninput="filtraRichieste()"></div>
+                        </div>
+                    </div>
+                    <div class="row mb-4">
+                        <div class="col-md-4 mb-3">
+                            <div class="card border-0 shadow-sm h-100 border-start border-4 border-warning"><div class="card-body"><div class="d-flex align-items-center">
+                                <div class="flex-grow-1"><h6 class="text-muted mb-1">Candidature In Attesa</h6><h3 class="mb-0" id="inAttesaCount">0</h3></div>
+                                <i class="bi bi-hourglass-split text-warning fs-1 opacity-50"></i>
+                            </div></div></div>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <div class="card border-0 shadow-sm h-100 border-start border-4 border-success"><div class="card-body"><div class="d-flex align-items-center">
+                                <div class="flex-grow-1"><h6 class="text-muted mb-1">Task Accettati</h6><h3 class="mb-0" id="accettatiCount">0</h3></div>
+                                <i class="bi bi-check-circle text-success fs-1 opacity-50"></i>
+                            </div></div></div>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <div class="card border-0 shadow-sm h-100 border-start border-4 border-primary"><div class="card-body"><div class="d-flex align-items-center">
+                                <div class="flex-grow-1"><h6 class="text-muted mb-1">Missioni Completate</h6><h3 class="mb-0" id="completatiCount">0</h3></div>
+                                <i class="bi bi-trophy text-primary fs-1 opacity-50"></i>
+                            </div></div></div>
+                        </div>
+                    </div>
+
+                    <h4 class="mb-3"><i class="bi bi-lightning-charge me-2"></i>Richieste Disponibili (Approvate dall'Ente)</h4>
+                    <div class="row" id="taskGrid">
+                        <div class="col-12 text-center text-muted py-5" id="emptyTasks">
+                            <i class="bi bi-inbox fs-1 d-block mb-2"></i>Nessuna richiesta disponibile al momento.
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ===== SEZIONE: I MIEI TASK ===== -->
+                <div class="content-section d-none" id="section-mieiTask">
+                    <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pb-2 mb-3 border-bottom">
+                        <h1 class="h2"><i class="bi bi-clipboard-check me-2 text-success"></i>I Miei Task</h1>
+                        <select class="form-select form-select-sm" style="width:auto" id="filtroTask" onchange="filtraMieiTask()">
+                            <option value="">Tutti gli stati</option><option value="IN_ATTESA">In Attesa</option><option value="ACCETTATA">Accettati</option>
+                        </select>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle" id="tabellaMieiTask">
+                            <thead class="table-light"><tr><th>Richiesta</th><th>Zona</th><th>Priorità</th><th>Data Candidatura</th><th>Stato</th><th>Azioni</th></tr></thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                    <div id="emptyMieiTask" class="text-center text-muted py-5 d-none">
+                        <i class="bi bi-inbox fs-1 d-block mb-2"></i>Non hai ancora candidature. Vai su <strong>Richieste Aperte</strong> per candidarti.
+                    </div>
+                </div>
+
+                <!-- ===== SEZIONE: STORICO ATTIVITÀ ===== -->
+                <div class="content-section d-none" id="section-storico">
+                    <div class="pb-2 mb-3 border-bottom"><h1 class="h2"><i class="bi bi-clock-history me-2 text-info"></i>Storico Attività</h1></div>
+                    <div class="row mb-4">
+                        <div class="col-md-6 mb-3">
+                            <div class="card border-0 shadow-sm border-start border-4 border-success"><div class="card-body text-center">
+                                <h2 class="text-success mb-0" id="storicoCompletate">0</h2><small class="text-muted">Missioni Completate</small>
+                            </div></div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <div class="card border-0 shadow-sm border-start border-4 border-primary"><div class="card-body text-center">
+                                <h2 class="text-primary mb-0" id="storicoTotale">0</h2><small class="text-muted">Candidature Totali</small>
+                            </div></div>
+                        </div>
+                    </div>
+                    <h5 class="mb-3"><i class="bi bi-calendar3 me-2"></i>Attività Recenti</h5>
+                    <div class="list-group mb-4" id="storicoLista">
+                        <div class="text-center text-muted py-4"><i class="bi bi-inbox fs-1 d-block mb-2"></i>Nessuna attività registrata.</div>
+                    </div>
+                </div>
+
+                <!-- ===== SEZIONE: IMPOSTAZIONI ===== -->
+                <div class="content-section d-none" id="section-impostazioni">
+                    <div class="pb-2 mb-3 border-bottom"><h1 class="h2"><i class="bi bi-gear me-2"></i>Impostazioni</h1></div>
+                    <div class="row"><div class="col-lg-8">
+                        <div class="card border-0 shadow-sm mb-4">
+                            <div class="card-header bg-white"><h5 class="mb-0"><i class="bi bi-person me-2"></i>Dati Personali</h5></div>
+                            <div class="card-body"><form>
+                                <div class="row mb-3">
+                                    <div class="col-md-6"><label class="form-label">Nome</label><input type="text" class="form-control" id="impostazioniNome"></div>
+                                    <div class="col-md-6"><label class="form-label">Cognome</label><input type="text" class="form-control" id="impostazioniCognome"></div>
+                                </div>
+                                <div class="row mb-3">
+                                    <div class="col-md-6"><label class="form-label">Email</label><input type="email" class="form-control" id="impostazioniEmail" readonly></div>
+                                    <div class="col-md-6"><label class="form-label">Ruolo</label><input type="text" class="form-control" id="impostazioniRuolo" readonly></div>
+                                </div>
+                                <button type="button" class="btn btn-emergenza" onclick="alert('Dati aggiornati!')"><i class="bi bi-check-lg me-2"></i>Salva Modifiche</button>
+                            </form></div>
+                        </div>
+                        <div class="card border-0 shadow-sm">
+                            <div class="card-header bg-white"><h5 class="mb-0"><i class="bi bi-shield-lock me-2"></i>Sicurezza</h5></div>
+                            <div class="card-body">
+                                <div class="mb-3"><label class="form-label">Password Attuale</label><input type="password" class="form-control"></div>
+                                <div class="mb-3"><label class="form-label">Nuova Password</label><input type="password" class="form-control"></div>
+                                <div class="mb-3"><label class="form-label">Conferma Password</label><input type="password" class="form-control"></div>
+                                <button type="button" class="btn btn-outline-danger" onclick="alert('Password aggiornata!')"><i class="bi bi-key me-2"></i>Cambia Password</button>
+                            </div>
+                        </div>
+                    </div></div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <footer class="py-3 text-white mt-auto"><div class="container-fluid text-center"><small>&copy; 2025 RinascitaDigitale - Pannello Volontario</small></div></footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        const utente = JSON.parse(sessionStorage.getItem('rd_utente_corrente') || '{}');
+
+        /* ── Init ── */
+        (function init() {
+            const nome = ((utente.nome || '') + ' ' + (utente.cognome || '')).trim();
+            if (nome) document.getElementById('nomeUtenteNav').textContent = nome;
+            const f = { impostazioniNome: utente.nome, impostazioniCognome: utente.cognome, impostazioniEmail: utente.email, impostazioniRuolo: utente.ruolo };
+            Object.entries(f).forEach(([id, v]) => { const el = document.getElementById(id); if (el) el.value = v || ''; });
+        })();
+
+        let richiesteAperte = [];
+        let mieCandidature = [];
+
+        async function loadData() {
+            try {
+                const [respRichieste, respCandidature] = await Promise.all([
+                    fetch('/api/richieste?stato=APERTA'),
+                    fetch('/api/candidature?volontario_id=' + utente.id)
+                ]);
+                richiesteAperte = await respRichieste.json();
+                mieCandidature = await respCandidature.json();
+
+                // Aggiorna contatori
+                document.getElementById('inAttesaCount').textContent = mieCandidature.filter(c => c.stato === 'IN_ATTESA').length;
+                document.getElementById('accettatiCount').textContent = mieCandidature.filter(c => c.stato === 'ACCETTATA').length;
+                document.getElementById('completatiCount').textContent = mieCandidature.filter(c => c.stato === 'COMPLETATA').length;
+
+                renderRichiesteAperte();
+                renderMieiTask();
+                renderStorico();
+            } catch (err) { console.error('Errore caricamento:', err); }
+        }
+
+        function prioritaHTML(p) {
+            if (!p) return '<span class="badge bg-secondary">N/D</span>';
+            const m = { 'ALTA': 'priority-alta', 'MEDIA': 'priority-media', 'BASSA': 'priority-bassa' };
+            const ic = { 'ALTA': 'exclamation-triangle', 'MEDIA': 'exclamation-circle', 'BASSA': 'info-circle' };
+            return `<span class="badge ${m[p] || 'bg-secondary'}"><i class="bi bi-${ic[p] || 'question'} me-1"></i>${p}</span>`;
+        }
+
+        function fmtDate(d) { return d ? new Date(d).toLocaleDateString('it-IT') : '-'; }
+
+        function renderRichiesteAperte() {
+            const grid = document.getElementById('taskGrid');
+            // Filtra: non mostrare richieste per cui il volontario ha già una candidatura
+            const mieRichiesteIds = new Set(mieCandidature.map(c => c.richiesta_id));
+            const disponibili = richiesteAperte.filter(r => !mieRichiesteIds.has(r.id));
+
+            if (disponibili.length === 0) {
+                grid.innerHTML = '<div class="col-12 text-center text-muted py-5"><i class="bi bi-inbox fs-1 d-block mb-2"></i>Nessuna richiesta disponibile al momento.</div>';
+                return;
+            }
+
+            grid.innerHTML = '';
+            disponibili.forEach(r => {
+                grid.innerHTML += `
+                <div class="col-lg-4 col-md-6 mb-4">
+                    <div class="card task-card h-100 shadow-sm border-0" data-id="${r.id}">
+                        <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                            ${prioritaHTML(r.priorita)}
+                            <small class="text-muted"><i class="bi bi-clock me-1"></i>${fmtDate(r.data_scadenza) !== '-' ? 'Scade: ' + fmtDate(r.data_scadenza) : fmtDate(r.data_creazione)}</small>
+                        </div>
+                        <div class="card-body">
+                            <h5 class="card-title">${r.titolo}</h5>
+                            <p class="card-text text-muted">${r.descrizione || ''}</p>
+                            <div class="d-flex align-items-center text-muted mb-2">
+                                <i class="bi bi-geo-alt me-2 text-emergenza"></i><span>${r.zona}</span>
+                            </div>
+                            <div class="d-flex align-items-center text-muted">
+                                <i class="bi bi-person me-2"></i><small>Segnalato da: ${r.creatore_nome || ''} ${r.creatore_cognome || ''}</small>
+                            </div>
+                        </div>
+                        <div class="card-footer bg-white border-0 pb-3">
+                            <button class="btn btn-emergenza w-100" onclick="candidati(${r.id}, this)">
+                                <i class="bi bi-hand-index me-2"></i>CANDIDATI
+                            </button>
+                        </div>
+                    </div>
+                </div>`;
+            });
+        }
+
+        function renderMieiTask() {
+            const tbody = document.querySelector('#tabellaMieiTask tbody');
+            const empty = document.getElementById('emptyMieiTask');
+            tbody.innerHTML = '';
+
+            if (mieCandidature.length === 0) {
+                empty.classList.remove('d-none');
+                return;
+            }
+            empty.classList.add('d-none');
+
+            mieCandidature.forEach(c => {
+                const statoMap = {
+                    'IN_ATTESA': '<span class="badge bg-warning text-dark">In Attesa</span>',
+                    'ACCETTATA': '<span class="badge bg-success">Accettata</span>',
+                    'RIFIUTATA': '<span class="badge bg-danger">Rifiutata</span>'
+                };
+                let azioni = '<span class="text-muted">—</span>';
+                if (c.stato === 'IN_ATTESA') {
+                    azioni = `<button class="btn btn-sm btn-success me-1" onclick="confermaCandidatura(${c.id})" title="Conferma"><i class="bi bi-check-lg"></i></button>`
+                           + `<button class="btn btn-sm btn-danger" onclick="ritiraCandidatura(${c.id})" title="Annulla"><i class="bi bi-x-lg"></i></button>`;
+                }
+
+                tbody.innerHTML += `<tr data-stato="${c.stato}">
+                    <td><strong>${c.titolo || 'Richiesta #' + c.richiesta_id}</strong></td>
+                    <td><i class="bi bi-geo-alt me-1 text-emergenza"></i>${c.zona || '-'}</td>
+                    <td>${prioritaHTML(c.priorita)}</td>
+                    <td>${fmtDate(c.data_candidatura)}</td>
+                    <td>${statoMap[c.stato] || c.stato}</td>
+                    <td>${azioni}</td>
+                </tr>`;
+            });
+        }
+
+        function renderStorico() {
+            const completate = mieCandidature.filter(c => c.stato === 'ACCETTATA');
+            document.getElementById('storicoCompletate').textContent = completate.length;
+            document.getElementById('storicoTotale').textContent = mieCandidature.length;
+
+            const lista = document.getElementById('storicoLista');
+            if (mieCandidature.length === 0) {
+                lista.innerHTML = '<div class="text-center text-muted py-4"><i class="bi bi-inbox fs-1 d-block mb-2"></i>Nessuna attività registrata.</div>';
+                return;
+            }
+            lista.innerHTML = '';
+            mieCandidature.forEach(c => {
+                const color = c.stato === 'ACCETTATA' ? 'success' : (c.stato === 'IN_ATTESA' ? 'warning' : 'secondary');
+                const icon = c.stato === 'ACCETTATA' ? 'check-circle-fill' : (c.stato === 'IN_ATTESA' ? 'hourglass-split' : 'x-circle');
+                lista.innerHTML += `
+                <div class="list-group-item border-0 border-start border-4 border-${color} mb-2 shadow-sm">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <h6 class="mb-1"><i class="bi bi-${icon} text-${color} me-2"></i>${c.titolo || 'Richiesta #' + c.richiesta_id}</h6>
+                            <p class="mb-1 text-muted">${c.zona || ''}</p>
+                        </div>
+                        <small class="text-muted">${fmtDate(c.data_candidatura)}</small>
+                    </div>
+                </div>`;
+            });
+        }
+
+        loadData();
+
+        /* ── Navigazione ── */
+        function navigateTo(event, sectionId) {
+            event.preventDefault();
+            document.querySelectorAll('.content-section').forEach(s => s.classList.add('d-none'));
+            document.getElementById('section-' + sectionId).classList.remove('d-none');
+            document.querySelectorAll('.sidebar .nav-link').forEach(l => l.classList.remove('active'));
+            event.currentTarget.classList.add('active');
+        }
+
+        /* ── Filtro ricerca ── */
+        function filtraRichieste() {
+            const testo = document.getElementById('cercaRichieste').value.toLowerCase();
+            document.querySelectorAll('#taskGrid > div').forEach(col => {
+                const card = col.querySelector('.task-card');
+                if (!card) return;
+                col.style.display = card.textContent.toLowerCase().includes(testo) ? '' : 'none';
+            });
+        }
+
+        function filtraMieiTask() {
+            const stato = document.getElementById('filtroTask').value;
+            document.querySelectorAll('#tabellaMieiTask tbody tr').forEach(tr => {
+                tr.style.display = (!stato || tr.dataset.stato === stato) ? '' : 'none';
+            });
+        }
+
+        /* ── Candidati (API) ── */
+        async function candidati(richiestaId, button) {
+            button.disabled = true;
+            button.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Invio...';
+            try {
+                const resp = await fetch('/api/candidature', {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ volontario_id: utente.id, richiesta_id: richiestaId })
+                });
+                const data = await resp.json();
+                if (data.success) {
+                    button.innerHTML = '<i class="bi bi-check-circle-fill me-2"></i>CANDIDATO!';
+                    button.className = 'btn btn-success w-100';
+                    alert('Candidatura inviata! Vai su "I Miei Task" per confermarla o annullarla.');
+                    loadData();
+                } else {
+                    alert(data.error || 'Errore');
+                    button.disabled = false;
+                    button.innerHTML = '<i class="bi bi-hand-index me-2"></i>CANDIDATI';
+                }
+            } catch (err) {
+                alert('Errore di connessione.');
+                button.disabled = false;
+                button.innerHTML = '<i class="bi bi-hand-index me-2"></i>CANDIDATI';
+            }
+        }
+
+        /* ── Conferma candidatura (API) ── */
+        async function confermaCandidatura(candidaturaId) {
+            if (!confirm('Confermare questa candidatura?')) return;
+            try {
+                const resp = await fetch('/api/candidature/' + candidaturaId, {
+                    method: 'PUT', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ stato: 'ACCETTATA' })
+                });
+                const data = await resp.json();
+                if (data.success) { alert('Candidatura confermata!'); loadData(); }
+                else alert(data.error || 'Errore');
+            } catch (err) { alert('Errore di connessione.'); }
+        }
+
+        /* ── Ritira candidatura (API) ── */
+        async function ritiraCandidatura(candidaturaId) {
+            if (!confirm('Sei sicuro di voler annullare la candidatura?')) return;
+            try {
+                const resp = await fetch('/api/candidature/' + candidaturaId, { method: 'DELETE' });
+                const data = await resp.json();
+                if (data.success) { alert('Candidatura annullata.'); loadData(); }
+                else alert(data.error || 'Errore');
+            } catch (err) { alert('Errore di connessione.'); }
+        }
+    </script>
+</body>
+</html>
