@@ -19,3 +19,7 @@ bin/
 # --- File di sistema (Windows/Mac) ---
 .DS_Store
 Thumbs.db
+# --- File di Node.js  ---
+node_modules/
+npm-debug.log
+.env
